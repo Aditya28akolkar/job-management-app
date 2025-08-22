@@ -7,7 +7,7 @@ const Footer = () => {
       {/* Logo and copyright text section */}
       <div className='flex items-center gap-4'>
         <img width={160} src={assets.logo} alt="InsiderJobs logo" />
-        <p className='text-sm text-gray-500'>Copyright @adityaakolkar | All rights reserved.</p>
+        <p className='text-sm text-gray-400'>Copyright @adityaakolkar | All rights reserved.</p>
       </div>
 
       {/* Social media icons and subscribe button */}
