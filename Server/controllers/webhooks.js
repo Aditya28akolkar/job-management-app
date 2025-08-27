@@ -1,7 +1,7 @@
 import User from "../models/User.js";
-import { Webhook } from "svix";
+import {Webhook} from "svix";
 
-const clerkWebhooks = async (req, res) => {
+export const clerkWebhooks = async (req, res) => {
  try {
   const whook=new Webhook(process.env.CLERK_WEBHOOK_SECRET)
   await whook.verify(JSON.stringify(req.body),{
@@ -17,7 +17,7 @@ const userData={
   email: data.email_addresses[0].email_address,
   name: data.first_name +" "+ data.last_name,
   image:data.image_url,
-  resume: ''
+  resume:''
 }
 await User.create(userData)
 res.json({})
@@ -28,9 +28,9 @@ break;
      case 'user.updated':{
       const userData={
   
-  email: data.email_addresses[0].email_address,
-  name: data.first_name +" "+ data.last_name,
-  image:data.image_url,
+  email:data.email_addresses[0].email_address,
+  name:data.first_name +" "+ data.last_name,
+  image:data.image_url
   
 }
       await User.findByIdAndUpdate(data.id, userData)
@@ -54,4 +54,3 @@ res.json({success:false,message:'Webhooks error'})
 
  }}
 
- export default clerkWebhooks;
