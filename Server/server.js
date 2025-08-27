@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import * as Sentry from "./node_modules/@sentry/node/build/types/index.js";
+import * as Sentry from "@sentry/node";
 
 import connectDB from './config/db.js';
 import connectCloudinary from './config/cloudinary.js';
