@@ -23,6 +23,8 @@ await User.create(userData)
 res.json({})
 break;
     }
+
+
      case 'user.updated':{
       const userData={
   

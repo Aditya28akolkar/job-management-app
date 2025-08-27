@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema(
     _id: { type: String, required: true }, // Clerk ID
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    image: { type: String },
+   
     resume: { type: String },
   image:{type:String, required:true}
   }
