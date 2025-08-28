@@ -1,4 +1,4 @@
-import Company from "../Models/Company.js";
+import Company from "../models/Company.js";
 import  bcrypt from 'bcrypt'
 
 import {v2 as cloudinary} from 'cloudinary'
