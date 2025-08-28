@@ -13,10 +13,8 @@ const app = express();
 
 // ✅ Initialize Sentry
 Sentry.init({
-  dsn: process.env.SENTRY_DSN,   // put your real DSN here
-  integrations: [
-    nodeProfilingIntegration(),
-  ],
+  dsn: process.env.SENTRY_DSN,
+  integrations: [nodeProfilingIntegration()],
   tracesSampleRate: 1.0,
   profilesSampleRate: 1.0,
 });
@@ -27,6 +25,15 @@ await connectCloudinary();
 
 // ✅ Middlewares
 app.use(cors());
+
+// ⚠️ Important: Add JSON parser ONLY for non-webhook routes
+app.use((req, res, next) => {
+  if (req.originalUrl === "/webhooks") {
+    next(); // Skip JSON parser for Clerk webhooks
+  } else {
+    express.json()(req, res, next);
+  }
+});
 
 // ✅ Routes
 app.use("/api/company", companyRoutes);
@@ -43,12 +50,10 @@ app.post(
   express.raw({ type: "application/json" }),
   clerkWebhooks
 );
-app.use(express.json());
-
 
 const PORT = process.env.PORT || 5000;
 
-// ✅ Error handler middleware for Sentry (v8 style)
+// ✅ Error handler middleware for Sentry
 app.use(Sentry.expressErrorHandler());
 
 // ✅ Start server
