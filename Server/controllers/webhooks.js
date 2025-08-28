@@ -5,18 +5,19 @@ export const clerkWebhooks = async (req, res) => {
   try {
     const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
 
-    // raw payload (Buffer)
-    const payload = req.body;
+    const payload = req.body; // raw Buffer
     const headers = {
       "svix-id": req.headers["svix-id"],
       "svix-timestamp": req.headers["svix-timestamp"],
       "svix-signature": req.headers["svix-signature"],
     };
 
-    // verify
+    console.log("📩 Clerk webhook hit!");
+    console.log("📦 Raw payload:", payload.toString());
+
+    // verify signature
     whook.verify(payload, headers);
 
-    // parse
     const { data, type } = JSON.parse(payload.toString());
 
     switch (type) {
@@ -60,7 +61,7 @@ export const clerkWebhooks = async (req, res) => {
 
     return res.status(200).json({});
   } catch (error) {
-    console.error("❌ Clerk webhook error:", error);
+    console.error("❌ Clerk webhook error:", error.message);
     return res.status(400).json({ success: false, message: "Webhook error" });
   }
 };
