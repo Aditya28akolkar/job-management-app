@@ -36,7 +36,7 @@ app.use((req, res, next) => {
 });
 
 // ✅ Routes
-app.use("/api/company", companyRoutes);
+
 
 app.get("/", (req, res) => res.send("✅ API working"));
 
@@ -50,7 +50,7 @@ app.post(
   express.raw({ type: "application/json" }),
   clerkWebhooks
 );
-
+app.use("/api/company", companyRoutes);
 const PORT = process.env.PORT || 5000;
 
 // ✅ Error handler middleware for Sentry
