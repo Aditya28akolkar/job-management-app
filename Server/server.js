@@ -27,7 +27,6 @@ await connectCloudinary();
 
 // ✅ Middlewares
 app.use(cors());
-app.use(express.json());
 
 // ✅ Routes
 app.use("/api/company", companyRoutes);
@@ -44,6 +43,8 @@ app.post(
   express.raw({ type: "application/json" }),
   clerkWebhooks
 );
+app.use(express.json());
+
 
 const PORT = process.env.PORT || 5000;
 
