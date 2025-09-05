@@ -8,7 +8,9 @@ import connectDB from './config/db.js';
 import connectCloudinary from './config/cloudinary.js';
 import companyRoutes from './routes/companyRoutes.js';
 import { clerkWebhooks } from './controllers/webhooks.js';
-
+import jobRoutes from './routes/jobRoutes.js'
+import userRoutes from "./routes/userRoutes.js"
+import {clerkMiddleware} from '@clerk/express'
 const app = express();
 
 // ✅ Initialize Sentry
@@ -25,6 +27,7 @@ await connectCloudinary();
 
 // ✅ Middlewares
 app.use(cors());
+app.use(clerkMiddleware())
 
 // ⚠️ Important: Add JSON parser ONLY for non-webhook routes
 app.use((req, res, next) => {
@@ -46,11 +49,13 @@ app.get("/debug-sentry", (req, res) => {
 
 // ✅ Clerk webhook route with raw body
 app.post(
-  "/webhooks",
+  "/webhooks/clerk",
   express.raw({ type: "application/json" }),
   clerkWebhooks
 );
 app.use("/api/company", companyRoutes);
+app.use('/api/jobs',jobRoutes)
+app.use('/api/users',userRoutes)
 const PORT = process.env.PORT || 5000;
 
 // ✅ Error handler middleware for Sentry

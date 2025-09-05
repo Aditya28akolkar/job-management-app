@@ -1,97 +1,137 @@
-import React, { useState } from 'react'
-import Navbar from '../components/Navbar'
-import { assets, jobsApplied } from '../assets/assets'
-import moment from 'moment'
-import Footer from '../components/Footer'
+import React, { useContext, useEffect, useState } from "react";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import { AppContext } from "../context/AppContext";
+import { useAuth, useUser } from "@clerk/clerk-react";
+import axios from "axios";
+import { toast } from "react-toastify";
+import moment from "moment";
 
 const Application = () => {
-  const[isEdit,setIsEdit]=useState(false)
-  const [resume,setResume]=useState(null)
-  return (
-  <>
-  <Navbar/>
-  <div className='container px-4 min-h-[65vh] 2xl:px-20 mx-auto my-10'>
+  const { user } = useUser();
+  const { getToken } = useAuth();
+  const [isEdit, setIsEdit] = useState(false);
+  const [resume, setResume] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-    <h2 className='text-xl font-semibold'>Your Resume</h2>
-    <div className='flex gap-2 mb-6 mt-3'>
-    
-{
+  const { backendUrl, userData, userApplications = [], fetchUserData, fetchUserApplications } = useContext(AppContext);
+
+ useEffect(() => {
+  let mounted = true;
+  const fetchData = async () => {
+    if (user) {
+      await fetchUserApplications();
+      if (mounted) {
+        setIsLoading(false);
+      }
+    }
+  };
+  fetchData();
+  return () => {
+    mounted = false;
+  };
+}, [user, fetchUserApplications]);
 
 
-  isEdit ? <>
+  const updateResume = async () => {
+    if (!resume) return toast.error("Please select a resume before saving");
+    try {
+      const formData = new FormData();
+      formData.append("resume", resume);
+      const token = await getToken();
+      const { data } = await axios.post(`${backendUrl}/api/users/update-resume`, formData, {
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+      });
+      if (data.success) {
+        toast.success("✅ Resume updated successfully");
+        await fetchUserData();
+      } else toast.error(data.message);
+    } catch (error) {
+      toast.error(error.message);
+    }
+    setIsEdit(false);
+    setResume(null);
+  };
 
-
-  <label className='flex items-center' htmlFor="resumeUpload">
-    <p className='bg-[#51BEEC] text-white px-4 py-2 rounded-lg mr-2'>Select Resume</p>
-    <input id='resumeUpload' onChange={e=>setResume(e.target.files[0])} accept='application/pdf' type="file" hidden />
-  <img src={assets.profile_upload_icon} alt="" />
-
-  
-    
-  </label>
-<button onClick={e=>setIsEdit(false)} className='bg-[#C66C1A] border border-red-500 rounded-lg px-4 py-2'>Save</button>
-  </>:
-  <div className='flex gap-2'>
-    <a className='bg-blue-100 text-blue-600 px-4 py-2 rounded-lg' href="">
-      Resume
-    </a>
-    <button onClick={()=>setIsEdit(true)} className='text-gray-400 border border-black rounded-lg px-4 py-2'>Edit</button>
-  </div>
-}
-    </div>
- 
- <h2 className='text-xl font-semibold mb-4'>Jobs Applied</h2>
- <table className='min-w-full bg-sky-100 border rounded-lg'>
-  <thead>
-    <tr>
-      <th className='py-3 px-4 border-b text-left'>Company</th>
-      <th className='py-3 px-4 border-b text-left'>job Title</th>
-      <th className='py-3 px-4 border-b text-left max-sm:hidden'>Location</th>
-      <th className='py-3 px-4 border-b text-left max-sm:hidden'>Date</th>
-      <th className='py-3 px-4 border-b text-left'>Status</th>
-      
-    </tr>
-  </thead>
-  <tbody>
-  {
-    jobsApplied.map((job,index)=>true ? (
-      <tr key={index}>
-        <td className='py-3 px-4 border-b'>
-          <div className="flex items-center gap-2">
-            <img className='w-8 h-8' src={job.logo} alt="" />
-            {job.company}
-          </div>
-        </td>
-        <td className='py-2 px-4 border-b'>{job.title}</td>
-        <td className='py-2 px-4 border-b max-sm:hidden'>{job.location}</td>
-        <td className='py-2 px-4 border-b max-sm:hidden'>{moment(job.date).format('ll')}</td>
-        <td className='py-2 px-4 border-b'>
-  <span
-    className={`
-      ${job.status === 'Accepted' ? 'bg-blue-100' 
-      : job.status === 'Rejected' ? 'bg-red-100' 
-      : 'bg-blue-200'} 
-      px-4 py-1.5 rounded
-    `}
-  >
-    {job.status}
-  </span>
-</td>
-
-      </tr>
-    ) : null)
+  if (isLoading) {
+    return (
+      <>
+        <Navbar />
+        <div className="container px-4 min-h-[65vh] 2xl:px-20 mx-auto my-10 text-center">
+          Loading applications...
+        </div>
+        <Footer />
+      </>
+    );
   }
-</tbody>
 
- </table>
- 
- 
-  </div>
-  
-  
-  <Footer/>
-  </>
-  )
-}
+  return (
+    <>
+      <Navbar />
+      <div className="container px-4 min-h-[65vh] 2xl:px-20 mx-auto my-10">
+        <h2 className="text-xl font-semibold">Your Resume</h2>
+        <div className="flex gap-2 mb-6 mt-3">
+          {isEdit || !userData?.resume ? (
+            <>
+              <label htmlFor="resumeUpload" className="flex items-center">
+                <p className="bg-[#51BEEC] text-white px-4 py-2 rounded-lg mr-2">
+                  {resume ? resume.name : "Select Resume"}
+                </p>
+                <input
+                  id="resumeUpload"
+                  onChange={(e) => setResume(e.target.files[0])}
+                  type="file"
+                  className="hidden"
+                />
+              </label>
+              <button onClick={updateResume} className="bg-green-500 text-white px-4 py-2 rounded-lg">
+                Save
+              </button>
+            </>
+          ) : (
+            <>
+              <p>{userData?.resume?.split("/").pop()}</p>
+              <button onClick={() => setIsEdit(true)} className="bg-red-500 text-white px-4 py-2 rounded-lg">
+                Edit
+              </button>
+            </>
+          )}
+        </div>
 
-export default Application
+        <h2 className="text-xl font-semibold mb-4">Applied Jobs</h2>
+        {userApplications?.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="table-auto w-full border border-gray-300 text-left">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="px-4 py-2 border">Company</th>
+                  <th className="px-4 py-2 border">Title</th>
+                  <th className="px-4 py-2 border">Location</th>
+                  <th className="px-4 py-2 border">Date</th>
+                  <th className="px-4 py-2 border">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {userApplications.map((job, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 border">{job.jobId?.companyId?.name}</td>
+                    <td className="px-4 py-2 border">{job.jobId?.title}</td>
+                    <td className="px-4 py-2 border">{job.jobId?.location}</td>
+                    <td className="px-4 py-2 border">{moment(job.date).format("DD-MM-YYYY")}</td>
+                    <td className="px-4 py-2 border">{job.status || "Pending"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p>No jobs applied yet.</p>
+        )}
+      </div>
+      <Footer />
+    </>
+  );
+};
+
+// ✅ Make sure to export the component as default
+export default Application;

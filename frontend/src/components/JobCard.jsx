@@ -11,7 +11,7 @@ const navigate =useNavigate()
 <div className='flex justify-between items-center'>
 
 
-    <img className='h-8' src={assets.company_icon} alt="" />
+    <img className='h-8' src={job.companyId.image} alt="" />
 </div>
 
 <h4 className='font-medium text-xl mt-2'>{job.title}</h4>
